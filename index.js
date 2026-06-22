@@ -31,7 +31,7 @@ async function run() {
 
    const database = client.db("ebookPlatform");
 const ebooksCollection = database.collection("ebooks");
-    const ebooksCollection = database.collection("ebooks");
+  
 
     console.log("MongoDB Connected Successfully");
 
