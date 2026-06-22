@@ -28,12 +28,14 @@ async function run() {
   try {
     await client.connect();
 
-    const database = client.db("ebookPlatformDB");
+
+   const database = client.db("ebookPlatform");
+const ebooksCollection = database.collection("ebooks");
     const ebooksCollection = database.collection("ebooks");
 
     console.log("MongoDB Connected Successfully");
 
-    // Get all ebooks
+  
     app.get("/ebooks", async (req, res) => {
       const result = await ebooksCollection.find().toArray();
       res.send(result);
