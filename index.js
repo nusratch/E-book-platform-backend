@@ -18,7 +18,8 @@ app.use(
 
 app.use(express.json());
 
-const uri = MONGO_URI;
+const uri = process.env.MONGO_URI;
+
 console.log("MONGO_URI Exists:", !!process.env.MONGO_URI);
 
 const client = new MongoClient(uri, {
