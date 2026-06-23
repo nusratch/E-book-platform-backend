@@ -8,7 +8,7 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-// CORS
+
 app.use(
   cors({
     origin: true,
@@ -44,7 +44,7 @@ async function run() {
 
     console.log("MongoDB Connected Successfully");
 
-    // JWT
+  
     app.post("/jwt", async (req, res) => {
       const user = req.body;
 
@@ -55,7 +55,7 @@ async function run() {
       res.send({ token });
     });
 
-    // Add User
+    
     app.post("/users", async (req, res) => {
       try {
         const user = req.body;
@@ -82,7 +82,7 @@ async function run() {
       }
     });
 
-    // Get User By Email
+    
     app.get("/users/:email", async (req, res) => {
       try {
         const email = req.params.email;
@@ -101,13 +101,13 @@ async function run() {
       }
     });
 
-    // Get All Ebooks
+    
     app.get("/ebooks", async (req, res) => {
       const result = await ebooksCollection.find().toArray();
       res.send(result);
     });
 
-    // Get Single Ebook
+
     app.get("/ebooks/:id", async (req, res) => {
       try {
         const id = req.params.id;
