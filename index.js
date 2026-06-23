@@ -8,7 +8,6 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 5000;
 
-
 app.use(
   cors({
     origin: true,
@@ -35,27 +34,37 @@ app.get("/", (req, res) => {
 
 async function run() {
   try {
+    console.log("Connecting MongoDB...");
+
     await client.connect();
+
+    console.log("MongoDB Connected Successfully");
 
     const database = client.db("ebookPlatform");
 
     const ebooksCollection = database.collection("ebooks");
     const usersCollection = database.collection("users");
 
-    console.log("MongoDB Connected Successfully");
+    console.log("Collections Ready");
 
-  
     app.post("/jwt", async (req, res) => {
-      const user = req.body;
+      try {
+        const user = req.body;
 
-      const token = jwt.sign(user, process.env.JWT_SECRET, {
-        expiresIn: "7d",
-      });
+        const token = jwt.sign(user, process.env.JWT_SECRET, {
+          expiresIn: "7d",
+        });
 
-      res.send({ token });
+        res.send({ token });
+      } catch (error) {
+        console.log("POST /jwt Error:", error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
     });
 
-    
     app.post("/users", async (req, res) => {
       try {
         const user = req.body;
@@ -82,7 +91,6 @@ async function run() {
       }
     });
 
-    
     app.get("/users/:email", async (req, res) => {
       try {
         const email = req.params.email;
@@ -101,12 +109,22 @@ async function run() {
       }
     });
 
-    
     app.get("/ebooks", async (req, res) => {
-      const result = await ebooksCollection.find().toArray();
-      res.send(result);
-    });
+      try {
+        console.log("GET /ebooks hit");
 
+        const result = await ebooksCollection.find().toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.log("GET /ebooks Error:", error);
+
+        res.status(500).send({
+          message: "Server Error",
+          error: error.message,
+        });
+      }
+    });
 
     app.get("/ebooks/:id", async (req, res) => {
       try {
@@ -137,6 +155,8 @@ async function run() {
         });
       }
     });
+
+    console.log("All Routes Loaded Successfully");
   } catch (error) {
     console.log("MongoDB Connection Error:", error);
   }
