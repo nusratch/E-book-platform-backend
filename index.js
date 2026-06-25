@@ -37,10 +37,10 @@ app.get("/", (req, res) => {
 async function run() {
   try {
     console.log("Connecting MongoDB...");
+await client.connect();
+await client.db("admin").command({ ping: 1 });
 
-    await client.connect();
-
-    console.log("MongoDB Connected Successfully");
+console.log("MongoDB Connected Successfully");
 
     const database = client.db("ebookPlatform");
 
