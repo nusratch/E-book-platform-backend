@@ -46,6 +46,9 @@ console.log("MongoDB Connected Successfully");
 
     const ebooksCollection = database.collection("ebooks");
     const usersCollection = database.collection("users");
+    const purchasesCollection = database.collection("purchases");
+const bookmarksCollection = database.collection("bookmarks");
+const transactionsCollection = database.collection("transactions");
 
     console.log("Collections Ready");
 
@@ -111,7 +114,184 @@ console.log("MongoDB Connected Successfully");
       }
     });
 
+    app.post("/bookmarks", async (req, res) => {
+  try {
+    const bookmark = req.body;
+
+    const existing = await bookmarksCollection.findOne({
+      email: bookmark.email,
+      ebookId: bookmark.ebookId,
+    });
+
+    if (existing) {
+      return res.status(400).send({
+        message: "Already bookmarked",
+      });
+    }
+
+    const result = await bookmarksCollection.insertOne(bookmark);
+
+    res.send(result);
+  } catch (error) {
+    console.log("POST /bookmarks Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.get("/bookmarks/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    const result = await bookmarksCollection
+      .find({ email })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.log("GET /bookmarks Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.delete("/bookmarks/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const result = await bookmarksCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    res.send(result);
+  } catch (error) {
+    console.log("DELETE /bookmarks Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.post("/purchases", async (req, res) => {
+  try {
+    const purchase = req.body;
+
+    const result = await purchasesCollection.insertOne(
+      purchase
+    );
+
+    res.send(result);
+  } catch (error) {
+    console.log("POST /purchases Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.get("/purchases/:email", async (req, res) => {
+  try {
+    const email = req.params.email;
+
+    const result = await purchasesCollection
+      .find({ email })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.log("GET /purchases Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});app.post("/transactions", async (req, res) => {
+  try {
+    const transaction = req.body;
+
+    const result = await transactionsCollection.insertOne(
+      transaction
+    );
+
+    res.send(result);
+  } catch (error) {
+    console.log("POST /transactions Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.get("/transactions", async (req, res) => {
+  try {
+    const result = await transactionsCollection
+      .find()
+      .sort({ date: -1 })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.log("GET /transactions Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.get("/sales/:writer", async (req, res) => {
+  try {
+    const writer = req.params.writer;
+
+    const result = await purchasesCollection
+      .find({ writer })
+      .sort({ purchaseDate: -1 })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.log("GET /sales Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
+app.patch("/ebooks/:id/sold", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const result = await ebooksCollection.updateOne(
+      {
+        _id: new ObjectId(id),
+      },
+      {
+        $set: {
+          status: "sold",
+        },
+      }
+    );
+
+    res.send(result);
+  } catch (error) {
+    console.log("PATCH /ebooks/:id/sold Error:", error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
     app.get("/ebooks", async (req, res) => {
+
       try {
         console.log("GET /ebooks hit");
 
@@ -127,6 +307,7 @@ console.log("MongoDB Connected Successfully");
         });
       }
     });
+
 
     app.get("/ebooks/:id", async (req, res) => {
       try {
