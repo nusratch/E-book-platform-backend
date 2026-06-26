@@ -37,32 +37,31 @@ app.get("/", (req, res) => {
 async function run() {
   try {
     console.log("Connecting MongoDB...");
-await client.connect();
-await client.db("admin").command({ ping: 1 });
 
-console.log("MongoDB Connected Successfully");
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+
+    console.log("MongoDB Connected Successfully");
 
     const database = client.db("ebookPlatform");
 
     const ebooksCollection = database.collection("ebooks");
     const usersCollection = database.collection("users");
     const purchasesCollection = database.collection("purchases");
-const bookmarksCollection = database.collection("bookmarks");
-const transactionsCollection = database.collection("transactions");
+    const bookmarksCollection = database.collection("bookmarks");
+    const transactionsCollection = database.collection("transactions");
 
     console.log("Collections Ready");
 
     app.post("/jwt", async (req, res) => {
       try {
-        const user = req.body;
-
-        const token = jwt.sign(user, process.env.JWT_SECRET, {
+        const token = jwt.sign(req.body, process.env.JWT_SECRET, {
           expiresIn: "7d",
         });
 
         res.send({ token });
       } catch (error) {
-        console.log("POST /jwt Error:", error);
+        console.log(error);
 
         res.status(500).send({
           message: "Server Error",
@@ -88,7 +87,7 @@ const transactionsCollection = database.collection("transactions");
 
         res.send(result);
       } catch (error) {
-        console.log("POST /users Error:", error);
+        console.log(error);
 
         res.status(500).send({
           message: "Server Error",
@@ -98,15 +97,39 @@ const transactionsCollection = database.collection("transactions");
 
     app.get("/users/:email", async (req, res) => {
       try {
-        const email = req.params.email;
-
         const result = await usersCollection.findOne({
-          email,
+          email: req.params.email,
         });
 
         res.send(result);
       } catch (error) {
-        console.log("GET /users/:email Error:", error);
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+app.post("/bookmarks", async (req, res) => {
+      try {
+        const bookmark = req.body;
+
+        const existing = await bookmarksCollection.findOne({
+          email: bookmark.email,
+          ebookId: bookmark.ebookId,
+        });
+
+        if (existing) {
+          return res.status(400).send({
+            message: "Already bookmarked",
+          });
+        }
+
+        const result = await bookmarksCollection.insertOne(bookmark);
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
 
         res.status(500).send({
           message: "Server Error",
@@ -114,200 +137,208 @@ const transactionsCollection = database.collection("transactions");
       }
     });
 
-    app.post("/bookmarks", async (req, res) => {
-  try {
-    const bookmark = req.body;
+    app.get("/bookmarks/:email", async (req, res) => {
+      try {
+        const result = await bookmarksCollection
+          .find({
+            email: req.params.email,
+          })
+          .toArray();
 
-    const existing = await bookmarksCollection.findOne({
-      email: bookmark.email,
-      ebookId: bookmark.ebookId,
-    });
+        res.send(result);
+      } catch (error) {
+        console.log(error);
 
-    if (existing) {
-      return res.status(400).send({
-        message: "Already bookmarked",
-      });
-    }
-
-    const result = await bookmarksCollection.insertOne(bookmark);
-
-    res.send(result);
-  } catch (error) {
-    console.log("POST /bookmarks Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.get("/bookmarks/:email", async (req, res) => {
-  try {
-    const email = req.params.email;
-
-    const result = await bookmarksCollection
-      .find({ email })
-      .toArray();
-
-    res.send(result);
-  } catch (error) {
-    console.log("GET /bookmarks Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.delete("/bookmarks/:id", async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    const result = await bookmarksCollection.deleteOne({
-      _id: new ObjectId(id),
-    });
-
-    res.send(result);
-  } catch (error) {
-    console.log("DELETE /bookmarks Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.post("/purchases", async (req, res) => {
-  try {
-    const purchase = req.body;
-
-    const result = await purchasesCollection.insertOne(
-      purchase
-    );
-
-    res.send(result);
-  } catch (error) {
-    console.log("POST /purchases Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.get("/purchases/:email", async (req, res) => {
-  try {
-    const email = req.params.email;
-
-    const result = await purchasesCollection
-      .find({ email })
-      .toArray();
-
-    res.send(result);
-  } catch (error) {
-    console.log("GET /purchases Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});app.post("/transactions", async (req, res) => {
-  try {
-    const transaction = req.body;
-
-    const result = await transactionsCollection.insertOne(
-      transaction
-    );
-
-    res.send(result);
-  } catch (error) {
-    console.log("POST /transactions Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.get("/transactions", async (req, res) => {
-  try {
-    const result = await transactionsCollection
-      .find()
-      .sort({ date: -1 })
-      .toArray();
-
-    res.send(result);
-  } catch (error) {
-    console.log("GET /transactions Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.get("/sales/:writer", async (req, res) => {
-  try {
-    const writer = req.params.writer;
-
-    const result = await purchasesCollection
-      .find({ writer })
-      .sort({ purchaseDate: -1 })
-      .toArray();
-
-    res.send(result);
-  } catch (error) {
-    console.log("GET /sales Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
-    });
-  }
-});
-
-app.patch("/ebooks/:id/sold", async (req, res) => {
-  try {
-    const id = req.params.id;
-
-    const result = await ebooksCollection.updateOne(
-      {
-        _id: new ObjectId(id),
-      },
-      {
-        $set: {
-          status: "sold",
-        },
+        res.status(500).send({
+          message: "Server Error",
+        });
       }
-    );
-
-    res.send(result);
-  } catch (error) {
-    console.log("PATCH /ebooks/:id/sold Error:", error);
-
-    res.status(500).send({
-      message: "Server Error",
     });
-  }
-});
+
+    app.delete("/bookmarks/:id", async (req, res) => {
+      try {
+        const result = await bookmarksCollection.deleteOne({
+          _id: new ObjectId(req.params.id),
+        });
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.post("/purchases", async (req, res) => {
+      try {
+        const purchase = req.body;
+
+        const existing = await purchasesCollection.findOne({
+          email: purchase.email,
+          ebookId: purchase.ebookId,
+        });
+
+        if (existing) {
+          return res.status(400).send({
+            message: "Already purchased",
+          });
+        }
+
+        const result = await purchasesCollection.insertOne({
+          ...purchase,
+          purchaseDate: new Date(),
+          status: "Purchased",
+        });
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.get("/purchases/:email", async (req, res) => {
+      try {
+        const result = await purchasesCollection
+          .find({
+            email: req.params.email,
+          })
+          .sort({
+            purchaseDate: -1,
+          })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.post("/transactions", async (req, res) => {
+      try {
+        const result = await transactionsCollection.insertOne({
+          ...req.body,
+          date: new Date(),
+        });
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.get("/transactions", async (req, res) => {
+      try {
+        const result = await transactionsCollection
+          .find()
+          .sort({
+            date: -1,
+          })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.get("/sales/:writer", async (req, res) => {
+      try {
+        const result = await purchasesCollection
+          .find({
+            writer: req.params.writer,
+          })
+          .sort({
+            purchaseDate: -1,
+          })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.post("/ebooks", async (req, res) => {
+      try {
+        const ebook = {
+          ...req.body,
+          createdAt: new Date(),
+          status: "available",
+        };
+
+        const result = await ebooksCollection.insertOne(ebook);
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
 
     app.get("/ebooks", async (req, res) => {
-
       try {
-        console.log("GET /ebooks hit");
-
-        const result = await ebooksCollection.find().toArray();
+        const result = await ebooksCollection
+          .find()
+          .sort({
+            createdAt: -1,
+          })
+          .toArray();
 
         res.send(result);
       } catch (error) {
-        console.log("GET /ebooks Error:", error);
+        console.log(error);
 
         res.status(500).send({
           message: "Server Error",
-          error: error.message,
         });
       }
     });
 
+    app.get("/writer/:email", async (req, res) => {
+      try {
+        const result = await ebooksCollection
+          .find({
+            writerEmail: req.params.email,
+          })
+          .sort({
+            createdAt: -1,
+          })
+          .toArray();
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
 
     app.get("/ebooks/:id", async (req, res) => {
       try {
@@ -331,7 +362,69 @@ app.patch("/ebooks/:id/sold", async (req, res) => {
 
         res.send(result);
       } catch (error) {
-        console.log("GET /ebooks/:id Error:", error);
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.put("/ebooks/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+
+        const result = await ebooksCollection.updateOne(
+          {
+            _id: new ObjectId(id),
+          },
+          {
+            $set: req.body,
+          }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.delete("/ebooks/:id", async (req, res) => {
+      try {
+        const result = await ebooksCollection.deleteOne({
+          _id: new ObjectId(req.params.id),
+        });
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
+
+        res.status(500).send({
+          message: "Server Error",
+        });
+      }
+    });
+
+    app.patch("/ebooks/:id/sold", async (req, res) => {
+      try {
+        const result = await ebooksCollection.updateOne(
+          {
+            _id: new ObjectId(req.params.id),
+          },
+          {
+            $set: {
+              status: "sold",
+            },
+          }
+        );
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
 
         res.status(500).send({
           message: "Server Error",
