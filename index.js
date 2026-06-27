@@ -432,6 +432,10 @@ app.post("/bookmarks", async (req, res) => {
       }
     });
 
+
+    app.get("/hello", (req, res) => {
+  res.send("Hello from API");
+});
     console.log("All Routes Loaded Successfully");
   } catch (error) {
     console.log("MongoDB Connection Error:", error);
