@@ -1,3 +1,5 @@
+const { auth } = require("./auth");
+const { toNodeHandler } = require("better-auth/node");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const express = require("express");
 const cors = require("cors");
@@ -17,6 +19,7 @@ app.use(
 );
 
 app.use(express.json());
+app.all("/api/auth/*", toNodeHandler(auth));
 
 const uri = process.env.MONGO_URI;
 
