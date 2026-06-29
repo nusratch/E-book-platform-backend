@@ -1,11 +1,12 @@
-const { auth } = require("./auth");
-const { toNodeHandler } = require("better-auth/node");
-const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
-const express = require("express");
-const cors = require("cors");
-const jwt = require("jsonwebtoken");
+import { auth } from "./auth.js";
+import { toNodeHandler } from "better-auth/node";
+import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import express from "express";
+import cors from "cors";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
-require("dotenv").config();
+dotenv.config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -453,4 +454,4 @@ if (process.env.NODE_ENV !== "production") {
   });
 }
 
-module.exports = app;
+export default app;
