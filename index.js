@@ -40,12 +40,20 @@ app.get("/", (req, res) => {
 
 async function run() {
   try {
-    console.log("Connecting MongoDB...");
+   console.log("Connecting MongoDB...");
 
-    await client.connect();
-    await client.db("admin").command({ ping: 1 });
+try {
+  await client.connect();
+  console.log("✅ Mongo Connected");
 
-    console.log("MongoDB Connected Successfully");
+  await client.db("admin").command({ ping: 1 });
+  console.log("✅ Ping Successful");
+} catch (err) {
+  console.error("❌ Mongo Connect Failed");
+  console.error(err);
+}
+
+console.log("After Mongo Connect");
 
     const database = client.db("ebookPlatform");
 
