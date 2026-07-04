@@ -1,6 +1,6 @@
 import { auth } from "./auth.js";
 import { toNodeHandler } from "better-auth/node";
-import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
@@ -26,13 +26,7 @@ const uri = process.env.MONGO_URI;
 
 console.log("MONGO_URI Exists:", !!process.env.MONGO_URI);
 
-const client = new MongoClient(uri, {
-  serverApi: {
-    version: ServerApiVersion.v1,
-    strict: true,
-    deprecationErrors: true,
-  },
-});
+const client = new MongoClient(uri);
 
 app.get("/", (req, res) => {
   res.send("Ebook Platform Server Running");
