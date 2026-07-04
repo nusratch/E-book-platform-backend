@@ -325,9 +325,15 @@ app.post("/bookmarks", async (req, res) => {
       } catch (error) {
         console.log(error);
 
-        res.status(500).send({
-          message: "Server Error",
-        });
+      console.error("GET /ebooks failed:", error);
+
+res.status(500).send({
+  message: error.message,
+  stack:
+    process.env.NODE_ENV !== "production"
+      ? error.stack
+      : undefined,
+});
       }
     });
 
