@@ -71,31 +71,38 @@ console.log("After Mongo Connect");
       }
     });
 
-    app.post("/users", async (req, res) => {
-      try {
-        const user = req.body;
+   app.post("/users", async (req, res) => {
+  try {
+    const user = req.body;
 
-        const existingUser = await usersCollection.findOne({
-          email: user.email,
-        });
+    
+    if (user.email === "admin@fable.com") {
+      return res.status(403).send({
+        message: "This email is reserved for admin.",
+      });
+    }
 
-        if (existingUser) {
-          return res.status(400).send({
-            message: "User already exists",
-          });
-        }
-
-        const result = await usersCollection.insertOne(user);
-
-        res.send(result);
-      } catch (error) {
-        console.log(error);
-
-        res.status(500).send({
-          message: "Server Error",
-        });
-      }
+    const existingUser = await usersCollection.findOne({
+      email: user.email,
     });
+
+    if (existingUser) {
+      return res.status(400).send({
+        message: "User already exists",
+      });
+    }
+
+    const result = await usersCollection.insertOne(user);
+
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
 
     app.get("/users/:email", async (req, res) => {
       try {
