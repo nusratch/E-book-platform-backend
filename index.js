@@ -1,4 +1,4 @@
-//import { auth } from "./auth.js";
+import { auth } from "./auth.js";
 import { toNodeHandler } from "better-auth/node";
 import { MongoClient, ObjectId } from "mongodb";
 import express from "express";
@@ -20,7 +20,7 @@ app.use(
 );
 
 app.use(express.json());
-//app.all("/api/auth/*", toNodeHandler(auth));
+app.all("/api/auth/*", toNodeHandler(auth));
 
 const uri = process.env.MONGO_URI;
 
@@ -37,11 +37,7 @@ async function run() {
    console.log("Connecting MongoDB...");
 
 try {
-  await client.connect();
-  console.log("✅ Mongo Connected");
-
-  await client.db("admin").command({ ping: 1 });
-  console.log("✅ Ping Successful");
+ 
 } catch (err) {
   console.error("❌ Mongo Connect Failed");
   console.error(err);

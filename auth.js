@@ -1,11 +1,16 @@
 import { betterAuth } from "better-auth";
 import { mongodbAdapter } from "@better-auth/mongo-adapter";
+import { MongoClient } from "mongodb";
 import dotenv from "dotenv";
 
 dotenv.config();
 
+const client = new MongoClient(process.env.MONGO_URI);
+
+await client.connect();
+
 export const auth = betterAuth({
-  database: mongodbAdapter(process.env.MONGO_URI),
+  database: mongodbAdapter(client.db()),
 
   emailAndPassword: {
     enabled: true,
