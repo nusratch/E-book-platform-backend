@@ -71,6 +71,48 @@ console.log("After Mongo Connect");
       }
     });
 
+    app.post("/google-login", async (req, res) => {
+  try {
+    const { name, email, image } = req.body;
+
+    let user = await usersCollection.findOne({ email });
+
+    if (!user) {
+      user = {
+        name,
+        email,
+        image,
+        role: "user",
+        createdAt: new Date(),
+      };
+
+      await usersCollection.insertOne(user);
+    }
+
+    const token = jwt.sign(
+      {
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
+
+    res.send({
+      token,
+      user,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
    app.post("/users", async (req, res) => {
   try {
     const user = req.body;
