@@ -145,6 +145,22 @@ console.log("After Mongo Connect");
     });
   }
 });
+app.get("/users", async (req, res) => {
+  try {
+    const result = await usersCollection
+      .find()
+      .sort({ createdAt: -1 })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
 
     app.get("/users/:email", async (req, res) => {
       try {
