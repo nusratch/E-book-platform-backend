@@ -161,6 +161,46 @@ app.get("/users", async (req, res) => {
     });
   }
 });
+app.patch("/users/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { role } = req.body;
+
+    const result = await usersCollection.updateOne(
+      { _id: new ObjectId(id) },
+      {
+        $set: {
+          role,
+        },
+      }
+    );
+
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+app.delete("/users/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const result = await usersCollection.deleteOne({
+      _id: new ObjectId(id),
+    });
+
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
 
     app.get("/users/:email", async (req, res) => {
       try {
