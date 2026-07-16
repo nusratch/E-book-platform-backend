@@ -377,6 +377,27 @@ res.status(500).send({
     });
 
 
+    app.get("/ebooks/writer/:email", async (req, res) => {
+  try {
+    const result = await ebooksCollection
+      .find({
+        writerEmail: req.params.email,
+      })
+      .sort({
+        createdAt: -1,
+      })
+      .toArray();
+
+    res.send(result);
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).send({
+      message: "Server Error",
+    });
+  }
+});
+
     app.get("/ebooks/:id", async (req, res) => {
       try {
         const id = req.params.id;
