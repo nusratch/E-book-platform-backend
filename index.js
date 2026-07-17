@@ -13,7 +13,9 @@ const port = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: true,
+    origin: [
+      "https://e-book-platform-two.vercel.app"
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   })
