@@ -41,7 +41,6 @@ export const auth = betterAuth({
   baseURL: "https://e-book-platform-backend.vercel.app",
 
   trustedOrigins: [
-    "https://e-book-platform-two.vercel.app",
-    "http://localhost:3000",
+    "https://e-book-platform-two.vercel.app"
   ],
 });
