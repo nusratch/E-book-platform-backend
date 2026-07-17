@@ -23,11 +23,25 @@ export const auth = betterAuth({
     },
   },
 
+  advanced: {
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    },
+  },
+
+  session: {
+    cookieCache: {
+      enabled: true,
+    },
+  },
+
   secret: process.env.BETTER_AUTH_SECRET,
 
   baseURL: "https://e-book-platform-backend.vercel.app",
 
   trustedOrigins: [
     "https://e-book-platform-two.vercel.app",
+    "http://localhost:3000",
   ],
 });
